@@ -9,7 +9,7 @@ A Python package for comprehensive real estate investment analysis and loan calc
 Key Features: <br>
 🏠 Property investment analysis and evaluation <br>
 💰 Mortgage and loan calculations (annuity, rEmayment rates, periods) <br>
-�� Cash flow analysis and property cost modeling<br>
+📊 Cash flow analysis and property cost modeling<br>
 🧮 Compound interest calculations and financial projections<br>
 📈 Tax rate calculations for property investments<br>
 🔧 Flexible installment and payment plan options<br>
