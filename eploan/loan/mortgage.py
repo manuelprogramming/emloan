@@ -37,7 +37,7 @@ class Mortgage:
     def credit_cost_mean(self) -> float:
         return credit.rest_dept(self.amount, self.interest_rate, self.repay_time_total, self.annuity, hist=True)["Interest"].mean()
 
-    def outlook(self) -> float:
+    def outlook(self) -> pd.DataFrame:
         return credit.rest_dept(self.amount, self.interest_rate, self.repay_time_total, self.annuity, hist=True)
 
     def outlook_plot(self):
