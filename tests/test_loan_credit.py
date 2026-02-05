@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from eploan import loan
+from emloan import loan
 
 
 def test_annuity_from_period_basic():

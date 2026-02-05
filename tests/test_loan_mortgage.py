@@ -1,6 +1,6 @@
 import pytest
 
-from eploan import loan
+from emloan import loan
 
 
 @pytest.fixture

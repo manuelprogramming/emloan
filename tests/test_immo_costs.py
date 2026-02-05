@@ -1,6 +1,6 @@
 import pytest
 
-from eploan import immo
+from emloan import immo
 
 
 @pytest.fixture

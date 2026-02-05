@@ -1,6 +1,6 @@
 import pytest
 
-from eploan import calculators
+from emloan import calculators
 
 house_props = {
     "details": {"living_space": 100},
