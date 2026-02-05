@@ -13,14 +13,12 @@ Key Features: <br>
 🧮 Compound interest calculations and financial projections<br>
 📈 Tax rate calculations for property investments<br>
 🔧 Flexible installment and payment plan options<br>
+📉 ETF Monte Carlo simulation for long-term return and risk analysis <br>
 Perfect for: Real estate investors, financial analysts, mortgage brokers, and anyone needing sophisticated property investment calculations.
 ## Installation
 
 You can install EmLoan using pip:
 
-```bash
-pip install Emloan
-```
 
 Or install from source:
 
