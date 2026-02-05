@@ -1,4 +1,4 @@
-# EPLoan
+# EMLoan
 
 A Python package for loan-related calculations and analysis.
 
