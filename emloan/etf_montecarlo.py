@@ -16,7 +16,6 @@ class Timing(Enum):
     END = "end"
 
 
-
 def _get_rv(data: pd.DataFrame, dist_name: str = "norm") -> stats.rv_continuous:
     if not dist_name in VALID_DISTRIBUTIONS:
         raise ValueError(
@@ -24,7 +23,7 @@ def _get_rv(data: pd.DataFrame, dist_name: str = "norm") -> stats.rv_continuous:
         )
 
     dist = getattr(stats, dist_name)
-    params = dist.fit(data.monthly_return_pct)
+    params = dist.fit(data.log_return)
     return dist(*params)
 
 
@@ -39,7 +38,6 @@ def fit_data(data: pd.DataFrame, dist_name: str = "norm") -> tuple[np.ndarray, n
         samples,
     )
     rv = _get_rv(data, dist_name)
-
     return x_sim, rv.pdf(x_sim)
 
 
@@ -49,25 +47,36 @@ def calculate_return_mc(
     installment: float,
     dist_name: str,
     n_sims: int,
+    initial_investment: float = 0.0,
     annual_fee: float = 0.0,
-    timing: Timing = Timing.BEGIN,  # "begin" or "end"
-):  
+    timing: Timing = Timing.BEGIN,
+):
+    # --- prepare data ---
+    data = data.copy()
 
-    # data = get_monthly_return_data(dataset)
     dist = _get_rv(data, dist_name)
-    monthly_changes = dist.rvs((n_sims, periods))
 
-    r = 1 + monthly_changes
-    monthly_fee = 1 - (1 - annual_fee) ** (1 / 12)
-    r_net = r * (1 - monthly_fee)
+    # --- simulate log returns ---
+    log_returns = dist.rvs((n_sims, periods))
 
-    log_growth = np.cumsum(np.log(r_net[:, ::-1]), axis=1)
+    # --- fees in log space ---
+    log_fee = np.log(1 - annual_fee) / 12
+    log_returns_net = log_returns + log_fee
+
+    # --- growth ---
+    log_growth = np.cumsum(log_returns_net, axis=1)
     growth = np.exp(log_growth)
 
-    if timing == Timing.END:
-        growth = growth[:, :-1]   # remove one month of compounding
+    # --- initial investment ---
+    initial_value = initial_investment * growth[:, -1]
 
-    return installment * growth.sum(axis=1)
+    # --- installments ---
+    if timing == Timing.BEGIN:
+        installment_value = (installment * growth).sum(axis=1)
+    else:
+        installment_value = (installment * growth[:, 1:]).sum(axis=1)
+
+    return initial_value + installment_value
 
 
 
