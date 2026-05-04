@@ -58,7 +58,7 @@ def rest_dept(
         credit_post = round(credit_pre - repay, 2)
         cur_df = pd.DataFrame(columns=column_names)
         cur_df.loc[0] = [period, credit_pre, interest, repay, credit_post]
-        dept_hist = pd.concat([dept_hist, cur_df], axis=0)
+        dept_hist = pd.concat([dept_hist, cur_df], axis=0, ignore_index=True)
     if hist:
         return dept_hist
     else:
@@ -100,7 +100,6 @@ def plot_credit_repay_hist(res_df: pd.DataFrame) -> go.Figure:
     )
 
     fig.update_layout(barmode="stack", hovermode="x", autosize=False)
-
     fig.update_yaxes(title_text="Annuity", secondary_y=False)
     fig.update_yaxes(title_text="Rest Credit Amount", secondary_y=True)
     fig.update_xaxes(title_text="Period")

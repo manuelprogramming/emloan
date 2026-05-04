@@ -1,12 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Self
 import pandas as pd
 import pickle
+import json
 
-from . import costs
-from . import cash_flow
+from . import details, cap_dev, cash_flow, costs
 from .. import loan
-from . import details
 
 
 @dataclass
@@ -22,6 +21,9 @@ class Immo:
     cash_flow: cash_flow.CashFlow
     mortgage: loan.Mortgage
     tax_rates: TaxRates
+    cap_dev_scenarios: dict[str, cap_dev.Scenario] = field(
+        default_factory=cap_dev.get_default
+    )
 
     def total_taxes(self):
         """total amount of taxes"""
@@ -57,7 +59,7 @@ class Immo:
 
     def ten_year_net_capital_gain(self) -> int:
         """how much money you get gross out"""
-        #if self.cash_flow.net_annually - self.mortgage.annuity <= 0:
+        # if self.cash_flow.net_annually - self.mortgage.annuity <= 0:
         period = 10 if self.mortgage.period >= 10 else self.mortgage.period
         return round(
             self.base_cost.price
@@ -66,7 +68,6 @@ class Immo:
             - self.mortgage.rest_dept_by_period(period),
             2,
         ) + period * (self.cash_flow.net_annually - self.mortgage.annuity)
-
 
     def ten_year_roe(self) -> float:
         if self.base_cost.proprietary_capital == 0:
@@ -122,12 +123,21 @@ class Immo:
             "10 Year RoE": round(self.ten_year_roe() * 100, 2),
         }
 
+    def cap_dev_scenarios_dict(self) -> dict[str, tuple[float]]:
+        return cap_dev.scenarios_to_dict(self.cap_dev_scenarios)
+
+    def capital_development(self) -> pd.DataFrame:
+        return cap_dev.capital_development(
+            self.mortgage,
+            self.cash_flow,
+            self.base_cost,
+            self.cap_dev_scenarios,
+        )
+
     def to_dict(self) -> dict:
         return {key: value.__dict__ for key, value in self.__dict__.items()}
 
     def to_json(self) -> str:
-        import json
-
         return json.dumps(self.to_dict())
 
     def pickle(self) -> str:
@@ -230,6 +240,25 @@ class Immo:
     def set_rent_per_sqm(self, value: float) -> None:
         self.set_net_cold_rent_monthly(value * self.details.living_space)
 
+    def set_cap_dev_good_inflation(self, value: float) -> None:
+        self.cap_dev_scenarios["good"].inflation = value
+    
+    def set_cap_dev_good_appreciation(self, value: float) -> None:
+        self.cap_dev_scenarios["good"].appreciation = value
+    
+    def set_cap_dev_medium_inflation(self, value: float) -> None:
+        self.cap_dev_scenarios["medium"].inflation = value
+    
+    def set_cap_dev_medium_appreciation(self, value: float) -> None:
+        self.cap_dev_scenarios["medium"].appreciation = value
+
+    def set_cap_dev_bad_inflation(self, value: float) -> None:
+        self.cap_dev_scenarios["bad"].inflation = value
+    
+    def set_cap_dev_bad_appreciation(self, value: float) -> None:
+        self.cap_dev_scenarios["bad"].appreciation = value
+
+
     def update(self, card: str, field: str, attribute: str, value: float) -> Self:
         attr_map = {
             ("base_cost", "price", "total"): "set_price",
@@ -281,13 +310,20 @@ class Immo:
             ("cost_effectiveness", "living space", "-"): "set_living_space",
             ("cost_effectiveness", "price/sqm", "-"): "set_price_per_sqm",
             ("cost_effectiveness", "net cold rent/sqm", "-"): "set_rent_per_sqm",
+            ("cap_dev", "good", "inflation"): "set_cap_dev_good_inflation",
+            ("cap_dev", "good", "appreciation"): "set_cap_dev_good_appreciation",
+            ("cap_dev", "medium", "inflation"): "set_cap_dev_medium_inflation",
+            ("cap_dev", "medium", "appreciation"): "set_cap_dev_medium_appreciation",
+            ("cap_dev", "bad", "inflation"): "set_cap_dev_bad_inflation",
+            ("cap_dev", "bad", "appreciation"): "set_cap_dev_bad_appreciation"
         }
 
+        print("###### ",card, field, attribute)
         key = (card, field, attribute)
         if key in attr_map:
             getattr(self, attr_map[key])(value)
         else:
-            raise ValueError(f"Cannot update {field} {attribute}")
+            return self #raise ValueError(f"Cannot update {field} {attribute}")
         return self
 
 

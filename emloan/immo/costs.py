@@ -1,9 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Literal
 import logging
 
 import pandas as pd
-import numpy as np
 
 from . import property_buy_tax
 
@@ -63,6 +61,9 @@ class BaseCost:
     @property
     def loan(self) -> float:
         return round(self.total * self.loan_rate, 2)
+
+    def value(self) -> float:
+        return self.price + self.modernisation
 
     def set_price(self, price: float) -> None:
         self.price = price

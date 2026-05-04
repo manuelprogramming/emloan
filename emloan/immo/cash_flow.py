@@ -29,6 +29,12 @@ class CashFlow:
     def net_annually(self) -> float:
         return 12 * self.net
 
+    def net_annually_minus_annuity(self, annuity: float) -> float:
+        return self.net_annually - annuity
+    
+    def net_monthly_minus_annuity(self, annuity: float) -> float:
+        return self.net_monthly - annuity
+
     def set_net_cold_rent(self, value: float) -> None:
         if value < 0:
             value = 0
@@ -96,7 +102,7 @@ def get_cashflow(
         )
     if period == "annually":
         return CashFlow(
-            net_cold_rent=12 * net_cold_rent,
-            operating_expenses=12 * operating_expanses,
-            operating_income=12 * operating_income,
+            net_cold_rent=net_cold_rent / 12,
+            operating_expenses=operating_expanses / 12,
+            operating_income=operating_income / 12,
         )
