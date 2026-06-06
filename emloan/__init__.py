@@ -1,3 +1,7 @@
+from importlib.metadata import version
+
+__version__ = version("emloan")
+
 from . import calculators
 from . import loan
 from . import immo

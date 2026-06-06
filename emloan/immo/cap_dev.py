@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import pandas as pd
+import plotly.graph_objects as go
 
 from .. import loan
 from . import CashFlow, BaseCost
@@ -61,3 +62,82 @@ def capital_development(
         )
 
     return scenarios_df
+
+
+def cap_dev_plot(scenarios_df: pd.DataFrame, proprietary_capital: float = None):
+    color_map = {"good": "#16a34a", "medium": "#f59e0b", "bad": "#dc2626"}
+    fig = go.Figure()
+
+    proprietary_capital = proprietary_capital if proprietary_capital > 0 else 1
+
+    for scenario in color_map.keys():
+        scenarios_df[scenario + "gain"] = scenarios_df[scenario] / proprietary_capital
+
+        fig.add_scatter(
+            x=scenarios_df["Period"],
+            y=scenarios_df[scenario],
+            marker_color=color_map[scenario],
+            name=scenario,
+            customdata=list(
+                scenarios_df[
+                    [scenario + "gain", scenario + " Annualized Return"]
+                ].itertuples(index=False, name=None)
+            ),
+            hovertemplate="<b>Scenario:</b> %{fullData.name}<br>"
+            + "<b>Year:</b> %{x}<br>"
+            + "<b>Capital:</b> €%{y:,.2f}<br>"
+            + "<b>Gain:</b> %{customdata[0]:,.2%}<br>"
+            + "<b>Annualized Return:</b> %{customdata[1]:,.2%}"
+            + "<extra></extra>",
+        )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[scenarios_df["Period"].min(), scenarios_df["Period"].max()],
+            y=[proprietary_capital, proprietary_capital],
+            mode="lines",
+            line=dict(
+                color="#64748b",
+                dash="dash",
+                width=2,
+            ),
+            name="Proprietary Capital",
+            hoverinfo="skip",
+        )
+    )
+
+    return fig.update_layout(
+        autosize=True,
+        height=340,
+        width=450,
+        dragmode=False,
+        showlegend=True,
+        xaxis=dict(
+            title=dict(
+                text="Years",
+                standoff=5,
+            ),
+            showgrid=False,
+        ),
+        yaxis=dict(
+            title=dict(
+                text="Amount [€]",
+            ),
+            showgrid=False,
+        ),
+        legend=dict(
+            orientation="h",
+            y=-0.2,
+            x=0.5,
+            xanchor="center",
+            yanchor="top",
+            font=dict(size=8),
+        ),
+        plot_bgcolor="#f0f4f8",
+        margin=dict(
+            l=50,
+            r=50,
+            t=20,
+            b=60,
+        ),
+    )

@@ -77,6 +77,7 @@ def plot_credit_repay_hist(res_df: pd.DataFrame) -> go.Figure:
             y=list(res_df.Interest),
             name="Interest",
             hovertemplate="Paid Interest: %{y:.0f}",
+            marker_color="#1e293b",
         )
     )
 
@@ -86,6 +87,7 @@ def plot_credit_repay_hist(res_df: pd.DataFrame) -> go.Figure:
             y=list(res_df.Repay),
             name="Repay",
             hovertemplate="Repayed Credit: %{y:.0f}",
+            marker_color="#64748b",
         )
     )
 
@@ -95,13 +97,44 @@ def plot_credit_repay_hist(res_df: pd.DataFrame) -> go.Figure:
             y=list(res_df["Credit Post"]),
             name="Post Period Credit",
             hovertemplate="Post Period Credit: %{y:.0f}",
+            marker_color="#4ade80",
         ),
         secondary_y=True,
     )
 
-    fig.update_layout(barmode="stack", hovermode="x", autosize=False)
-    fig.update_yaxes(title_text="Annuity", secondary_y=False)
-    fig.update_yaxes(title_text="Rest Credit Amount", secondary_y=True)
-    fig.update_xaxes(title_text="Period")
+    fig.update_layout(
+        barmode="stack",
+        hovermode="x",
+        autosize=False,
+        height=340,
+        width=450,
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            y=-0.2,
+            x=0.5,
+            xanchor="center",
+            yanchor="top",
+            font_size=8,
+            itemsizing="constant",
+        ),
+        margin=dict(l=50, r=50, t=20, b=60),
+    )
+    max_credit_post = (
+        res_df["Credit Post"].replace([np.inf, -np.inf], np.nan).max(skipna=True)
+    )
+
+    max_credit_post = 0 if pd.isna(max_credit_post) else max_credit_post
+    yaxis2_range = [0, max_credit_post * 1.1] if max_credit_post > 0 else [0, 1]
+
+    fig.update_yaxes(title_text="Annuity", showgrid=False, secondary_y=False)
+    fig.update_yaxes(
+        title_text="Rest Credit Amount",
+        showgrid=False,
+        side="right",
+        secondary_y=True,
+        range=yaxis2_range,
+    )
+    fig.update_xaxes(title_text="Period", title_standoff=5)
 
     return fig

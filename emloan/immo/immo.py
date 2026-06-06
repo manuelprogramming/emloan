@@ -3,6 +3,7 @@ from typing import Self
 import pandas as pd
 import pickle
 import json
+import plotly.graph_objects as go
 
 from . import details, cap_dev, cash_flow, costs
 from .. import loan
@@ -133,6 +134,11 @@ class Immo:
             self.base_cost,
             self.cap_dev_scenarios,
         )
+    
+    def capital_development_plot(self) -> go.Figure:
+        return cap_dev.cap_dev_plot(
+            self.capital_development(),
+            self.base_cost.proprietary_capital)
 
     def to_dict(self) -> dict:
         return {key: value.__dict__ for key, value in self.__dict__.items()}

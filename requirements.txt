@@ -1,6 +1,0 @@
-numpy
-pandas
-plotly
-scipy
-pytest
-pyinstaller
